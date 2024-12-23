@@ -1,20 +1,41 @@
 import psutil
 import os
 import time
+import signal
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-if load_dotenv() is False:
-    print("No .env file found.")
-    exit(1)
+load_dotenv()
 
 # Get InfluxDB credentials from environment variables
 url = os.getenv("INFLUXDB_URL")
 token = os.getenv("INFLUXDB_TOKEN")
 org = os.getenv("INFLUXDB_ORG")
 bucket = os.getenv("INFLUXDB_BUCKET")
+interval = os.getenv("INTERVAL_SEC", "1")
+
+if not all([url, token, org, bucket, interval]):
+    raise ValueError(
+        "Incomplete environment. Please set all variable either in the .env file or in the environment."
+    )
+
+interval = int(interval)
+
+GRACEFUL_STOP = False
+
+
+def graceful_exit(signum, frame):
+    global GRACEFUL_STOP
+    if GRACEFUL_STOP:
+        print("Exiting immediately!")
+        exit(1)
+    print("Stopping gracefully...")
+    GRACEFUL_STOP = True
+
+
+signal.signal(signal.SIGINT, graceful_exit)
 
 
 def get_hardware_temperatures():
@@ -61,10 +82,14 @@ def push_data_to_influxdb(data):
 
 
 # Get hardware temperatures using psutil
-for x in range(1, 1000):
+rounds = 0
+while True:
+    rounds += 1
     data = get_hardware_temperatures()
     # Push the data to InfluxDB
     if data:
         push_data_to_influxdb(data)
-    print(f"pushed run: {x}")
-    time.sleep(1)
+    print(f"pushed run: {rounds}")
+    if GRACEFUL_STOP:
+        exit(0)
+    time.sleep(interval)

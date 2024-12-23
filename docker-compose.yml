@@ -1,0 +1,9 @@
+services:
+  temp-reporter:
+    image: kelke/temp-reporter:latest
+    environment:
+      INFLUXDB_URL: http://localhost:3000
+      INFLUXDB_TOKEN: sometoken123==
+      INFLUXDB_ORG: myorg
+      INFLUXDB_BUCKET: mybucket
+      INTERVAL_SEC: 1
