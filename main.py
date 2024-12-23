@@ -2,6 +2,7 @@ import psutil
 import os
 import time
 import signal
+import datetime
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from dotenv import load_dotenv
@@ -89,7 +90,9 @@ while True:
     # Push the data to InfluxDB
     if data:
         push_data_to_influxdb(data)
-    print(f"pushed run: {rounds}")
+    now = datetime.datetime.now()
+    formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"{formatted_now} | pushed round : {rounds}")
     if GRACEFUL_STOP:
         exit(0)
     time.sleep(interval)
