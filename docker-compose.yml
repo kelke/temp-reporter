@@ -1,6 +1,7 @@
 services:
   temp-reporter:
     image: kelke/temp-reporter:latest
+    restart: unless-stopped
     environment:
       INFLUXDB_URL: http://localhost:3000
       INFLUXDB_TOKEN: sometoken123==
