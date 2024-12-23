@@ -74,7 +74,7 @@ def push_data_to_influxdb(data):
     for part, temperatures in data.items():
         for nr, temp in enumerate(temperatures):
             # Create a point for each temperature value
-            point = Point("hardware_2").tag("sensor", nr).field(part, temp)
+            point = Point("temperature").tag("sensor", nr).field(part, temp)
             # Write the point to the database
             write_api.write(bucket=bucket, org=org, record=point)
 
